@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 using WeatherForecast.Host.Common;
 using WeatherForecast.Host.WeatherProviders;
 
-namespace WeatherForecast.Host.Features.CurrentWeather;
+namespace WeatherForecast.Host.Features.ForecastWeather;
 
-public static partial class GetCurrentWeather
+public static partial class GetForecastWeather
 {
     public static async Task<IResult> ByCityEndpoint([FromQuery(Name = "city")] string city, IMediator mediator)
     {
-        var result = await mediator.Send(new GetCurrentWeatherByCityQuery(city));
+        var result = await mediator.Send(new GetForecastWeatherByCityQuery(city));
 
         return result.IsSuccess
             ? Results.Ok(result.Value)
@@ -20,15 +20,15 @@ public static partial class GetCurrentWeather
     }
 }
 
-public record GetCurrentWeatherByCityQuery(string City) : IRequest<ApiResponse<object>>;
+public record GetForecastWeatherByCityQuery(string City) : IRequest<ApiResponse<object>>;
 
-public class GetCurrentWeatherByCityHandler(IWeatherProvider weatherProvider) : IRequestHandler<GetCurrentWeatherByCityQuery, ApiResponse<object>>
+public class GetForecastWeatherByCityHandler(IWeatherProvider weatherProvider) : IRequestHandler<GetForecastWeatherByCityQuery, ApiResponse<object>>
 {
     private readonly IWeatherProvider _weatherProvider = weatherProvider;
 
-    public async Task<ApiResponse<object>> Handle(GetCurrentWeatherByCityQuery request, CancellationToken cancellationToken)
+    public async Task<ApiResponse<object>> Handle(GetForecastWeatherByCityQuery request, CancellationToken cancellationToken)
     {
-        var response = await _weatherProvider.GetCurrentWeather(request.City);
+        var response = await _weatherProvider.GetForecastWeather(request.City);
 
         return response.IsSuccessStatusCode
             ? ApiResponse<object>.Success(new { Content = await response.Content.ReadAsStringAsync(cancellationToken) })

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using WeatherForecast.Host.Extensions;
 using WeatherForecast.Host.Features.CurrentWeather;
+using WeatherForecast.Host.Features.ForecastWeather;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,8 +27,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/currentweather", Endpoints.GetCurrentWeatherByCityEndpoint)
+app.MapGet("/currentweather", GetCurrentWeather.ByCityEndpoint)
     .WithName("GetCurrentWeather")
+    .WithOpenApi();
+
+app.MapGet("/forecastweather", GetForecastWeather.ByCityEndpoint)
+    .WithName("GetForecastWeather")
     .WithOpenApi();
 
 app.Run();

@@ -18,6 +18,12 @@ public class OpenWeatherMapWeatherProvider(IHttpClientFactory httpClientFactory)
         return await client.GetAsync($"/weather?q={city}");
     }
 
+    public async Task<HttpResponseMessage> GetForecastWeather(string city)
+    {
+        var client = _httpClientFactory.CreateClient(Constants.OpenWeatherMapClient);
+        return await client.GetAsync($"/forecast?q={city}");
+    }
+
     public class Handler(IConfiguration configuration) : DelegatingHandler
     {
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
