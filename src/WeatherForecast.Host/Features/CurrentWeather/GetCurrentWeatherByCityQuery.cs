@@ -1,14 +1,14 @@
-﻿using MediatR;
+﻿using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading;
 using System.Threading.Tasks;
 using WeatherForecast.Host.Common;
-using WeatherForecast.Host.WeatherProviders;
+using WeatherForecast.Host.Features.ForecastWeather;
 
 namespace WeatherForecast.Host.Features.CurrentWeather;
 
-public static partial class GetCurrentWeather
+public static class GetCurrentWeather
 {
     public static async Task<IResult> ByCityEndpoint([FromQuery(Name = "city")] string city, IMediator mediator)
     {
@@ -22,16 +22,10 @@ public static partial class GetCurrentWeather
 
 public record GetCurrentWeatherByCityQuery(string City) : IRequest<ApiResponse<object>>;
 
-public class GetCurrentWeatherByCityHandler(IWeatherProvider weatherProvider) : IRequestHandler<GetCurrentWeatherByCityQuery, ApiResponse<object>>
+public class GetCurrentWeatherByCityValidator : AbstractValidator<GetForecastWeatherByCityQuery>
 {
-    private readonly IWeatherProvider _weatherProvider = weatherProvider;
-
-    public async Task<ApiResponse<object>> Handle(GetCurrentWeatherByCityQuery request, CancellationToken cancellationToken)
+    public GetCurrentWeatherByCityValidator()
     {
-        var response = await _weatherProvider.GetCurrentWeather(request.City);
-
-        return response.IsSuccessStatusCode
-            ? ApiResponse<object>.Success(new { Content = await response.Content.ReadAsStringAsync(cancellationToken) })
-            : ApiResponse<object>.Failure(message: $"Weather provider's response code ({response.StatusCode}) does not indicate success.");
+        RuleFor(x => x.City).NotEmpty();
     }
 }
