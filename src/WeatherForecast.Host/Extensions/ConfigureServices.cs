@@ -1,10 +1,22 @@
-﻿using WeatherForecast.Host.Common;
+﻿using MediatR;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Reflection;
+using WeatherForecast.Host.Common;
+using WeatherForecast.Host.PipelineBehaviors;
 using WeatherForecast.Host.WeatherProviders;
 
 namespace WeatherForecast.Host.Extensions;
 
 public static class ConfigureServices
 {
+    public static void AddMediatR(this IServiceCollection services)
+    {
+        services.AddMediatR(config => config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+    }
+
     public static void AddOpenWeatherMapWeatherProvider(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddOpenWeatherMapClient(configuration);
@@ -21,6 +33,6 @@ public static class ConfigureServices
             client.BaseAddress = new Uri(baseUrl);
             client.DefaultRequestHeaders.UserAgent.ParseAdd("senboni/WeatherForecast");
         })
-        .AddHttpMessageHandler(() => new QueryParameterHandler(Constants.OpenWeatherMapApiKeyParameterName, configuration["OpenWeatherMapApiKey"])); ;
+        .AddHttpMessageHandler(() => new OpenWeatherMapWeatherProvider.Handler(configuration));
     }
 }

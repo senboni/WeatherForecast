@@ -1,7 +1,10 @@
 ﻿
+using System.Net.Http;
+using System.Threading.Tasks;
+
 namespace WeatherForecast.Host.WeatherProviders;
 
 public interface IWeatherProvider
 {
-    Task GetCurrentWeather(string city);
+    Task<HttpResponseMessage> GetCurrentWeather(string city);
 }
