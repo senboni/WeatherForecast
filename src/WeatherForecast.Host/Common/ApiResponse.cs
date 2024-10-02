@@ -1,41 +1,41 @@
-﻿namespace WeatherForecast.Host.Common;
+﻿using System.Net;
+
+namespace WeatherForecast.Host.Common;
 
 public class ApiResponse
 {
     public bool IsSuccess { get; init; }
     public bool IsFailure => !IsSuccess;
     public string Message { get; init; }
+    public HttpStatusCode StatusCode { get; init; }
 
-    private ApiResponse(bool isSuccess, string message)
+    protected ApiResponse(bool isSuccess, string message, HttpStatusCode statusCode)
     {
         IsSuccess = isSuccess;
         Message = message;
+        StatusCode = statusCode;
     }
 
-    public static ApiResponse Success(string message = "")
-        => new(true, message);
+    public static ApiResponse Success(string message = "", HttpStatusCode statusCode = HttpStatusCode.OK)
+        => new(true, message, statusCode);
 
-    public static ApiResponse Failure(string message = "")
-        => new(false, message);
+    public static ApiResponse Failure(string message = "", HttpStatusCode statusCode = HttpStatusCode.BadRequest)
+        => new(false, message, statusCode);
 }
 
-public class ApiResponse<TValue> where TValue : class
+public class ApiResponse<TValue> : ApiResponse where TValue : class
 {
     public TValue? Value { get; init; }
-    public bool IsSuccess { get; init; }
-    public bool IsFailure => !IsSuccess;
-    public string Message { get; init; }
 
-    private ApiResponse(TValue? value, bool isSuccess, string message)
+    protected ApiResponse(TValue? value, bool isSuccess, string message, HttpStatusCode statusCode)
+        : base(isSuccess, message, statusCode)
     {
         Value = value;
-        IsSuccess = isSuccess;
-        Message = message;
     }
 
-    public static ApiResponse<TValue> Success(TValue value, string message = "")
-        => new(value, true, message);
+    public static ApiResponse<TValue> Success(TValue value, string message = "", HttpStatusCode statusCode = HttpStatusCode.OK)
+        => new(value, true, message, statusCode);
 
-    public static ApiResponse<TValue> Failure(TValue? value = null, string message = "")
-        => new(value, false, message);
+    public static ApiResponse<TValue> Failure(TValue? value = null, string message = "", HttpStatusCode statusCode = HttpStatusCode.OK)
+        => new(value, false, message, statusCode);
 }
