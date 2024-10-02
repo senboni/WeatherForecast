@@ -11,7 +11,8 @@ using WeatherForecast.Host.WeatherProviders;
 
 namespace WeatherForecast.Host.Features.ForecastWeather;
 
-public class GetForecastWeatherHandler(IWeatherProvider weatherProvider) : IRequestHandler<GetForecastWeatherRequest, ApiResponse<GetForecastWeatherResponse>>
+public class GetForecastWeatherHandler(IWeatherProvider weatherProvider)
+    : IRequestHandler<GetForecastWeatherRequest, ApiResponse<GetForecastWeatherResponse>>
 {
     private readonly IWeatherProvider _weatherProvider = weatherProvider;
 
