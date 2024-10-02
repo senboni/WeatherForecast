@@ -22,7 +22,7 @@ public static class GetCurrentWeather
 
 public record GetCurrentWeatherRequest(string City) : IRequest<ApiResponse<GetCurrentWeatherResponse>>;
 
-public class GetCurrentWeatherByCityValidator : AbstractValidator<GetForecastWeatherByCityRequest>
+public class GetCurrentWeatherByCityValidator : AbstractValidator<GetForecastWeatherRequest>
 {
     public GetCurrentWeatherByCityValidator()
     {

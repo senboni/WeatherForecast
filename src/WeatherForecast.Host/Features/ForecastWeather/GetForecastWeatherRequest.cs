@@ -12,17 +12,17 @@ public static class GetForecastWeather
 {
     public static async Task<IResult> ByCityEndpoint([FromQuery(Name = "city")] string city, IMediator mediator)
     {
-        var result = await mediator.Send(new GetForecastWeatherByCityQuery(city));
+        var result = await mediator.Send(new GetForecastWeatherRequest(city));
 
         return result.IsSuccess
             ? Results.Ok(result.Value)
-            : Results.BadRequest();
+            : Results.StatusCode((int)result.StatusCode);
     }
 }
 
-public record GetForecastWeatherByCityQuery(string City) : IRequest<ApiResponse<object>>;
+public record GetForecastWeatherRequest(string City) : IRequest<ApiResponse<GetForecastWeatherResponse>>;
 
-public class GetForecastWeatherByCityValidator : AbstractValidator<GetCurrentWeatherByCityQuery>
+public class GetForecastWeatherByCityValidator : AbstractValidator<GetCurrentWeatherRequest>
 {
     public GetForecastWeatherByCityValidator()
     {
