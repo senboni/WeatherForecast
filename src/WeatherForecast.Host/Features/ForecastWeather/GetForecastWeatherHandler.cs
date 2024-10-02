@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using System;
 using System.Linq;
 using System.Net;
 using System.Text.Json;
@@ -26,7 +27,7 @@ public class GetForecastWeatherHandler(IWeatherProvider weatherProvider) : IRequ
         }
 
         using var stream = await forecastResponse.Content.ReadAsStreamAsync(cancellationToken);
-        var forecastObject = await JsonSerializer.DeserializeAsync<ForecastWeatherResponse>(stream, cancellationToken: cancellationToken);
+        var forecastObject = await JsonSerializer.DeserializeAsync<ForecastObject>(stream, cancellationToken: cancellationToken);
 
         if (forecastObject is null)
         {
@@ -35,30 +36,60 @@ public class GetForecastWeatherHandler(IWeatherProvider weatherProvider) : IRequ
                 statusCode: HttpStatusCode.InternalServerError);
         }
 
-        return ApiResponse<GetForecastWeatherResponse>.Success(new GetForecastWeatherResponse
-        {
-            City = forecastObject.city.name,
-            Country = forecastObject.city.country,
-            Forecasts = forecastObject.list.Select(x =>
-            {
-                var weather = x.weather.FirstOrDefault();
-                var descriptionParts = new string?[] { weather?.main, weather?.description };
+        return request.DateTime is null
+            ? allForecasts()
+            : forecastForDate((DateTime)request.DateTime);
 
-                return new GetForecastWeatherResponse.Forecast
+        ApiResponse<GetForecastWeatherResponse> allForecasts()
+            => ApiResponse<GetForecastWeatherResponse>.Success(new GetForecastWeatherResponse
+            {
+                City = forecastObject.city.name,
+                Country = forecastObject.city.country,
+                Forecasts = forecastObject.list.Select(x =>
                 {
-                    DateTime = x.dt.ToDateTime(),
+                    var weather = x.weather.FirstOrDefault();
+                    var descriptionParts = new string?[] { weather?.main, weather?.description };
+
+                    return new GetForecastWeatherResponse.Forecast
+                    {
+                        DateTime = x.dt.ToDateTime(),
+                        Description = string.Join(", ", descriptionParts.Where(x => !string.IsNullOrEmpty(x))),
+                        Temperature = x.main.temp,
+                        WindSpeed = x.wind.speed,
+                    };
+                }),
+            });
+
+        ApiResponse<GetForecastWeatherResponse> forecastForDate(DateTime date)
+        {
+            var closestMatch = findClosest(forecastObject.list, date);
+            var weather = closestMatch.weather.FirstOrDefault();
+            var descriptionParts = new string?[] { weather?.main, weather?.description };
+
+            return ApiResponse<GetForecastWeatherResponse>.Success(new GetForecastWeatherResponse
+            {
+                City = forecastObject.city.name,
+                Country = forecastObject.city.country,
+                Forecasts = [new GetForecastWeatherResponse.Forecast
+                {
+                    DateTime = closestMatch.dt.ToDateTime(),
                     Description = string.Join(", ", descriptionParts.Where(x => !string.IsNullOrEmpty(x))),
-                    Temperature = x.main.temp,
-                    WindSpeed = x.wind.speed,
-                };
-            }),
-        });
+                    Temperature = closestMatch.main.temp,
+                    WindSpeed = closestMatch.wind.speed,
+                }],
+            });
+        }
+
+        Forecast findClosest(Forecast[] forecasts, DateTime targetDate)
+            => forecasts
+                .OrderBy(x => Math.Abs((x.dt.ToDateTime() - targetDate).Ticks))
+                .First();
     }
 }
 
 #pragma warning disable CS8618
 #pragma warning disable IDE1006
-file class ForecastWeatherResponse
+file class ForecastObject
 {
     public Forecast[] list { get; set; }
     public City city { get; set; }

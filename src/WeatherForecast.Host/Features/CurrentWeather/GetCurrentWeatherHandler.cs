@@ -27,7 +27,7 @@ public class GetCurrentWeatherHandler(IWeatherProvider weatherProvider)
         }
 
         using var stream = await currentWeatherResponse.Content.ReadAsStreamAsync(cancellationToken);
-        var currentWeatherObject = await JsonSerializer.DeserializeAsync<CurrentWeatherResponse>(stream, cancellationToken: cancellationToken);
+        var currentWeatherObject = await JsonSerializer.DeserializeAsync<CurrentWeatherObject>(stream, cancellationToken: cancellationToken);
 
         if (currentWeatherObject is null)
         {
@@ -53,7 +53,7 @@ public class GetCurrentWeatherHandler(IWeatherProvider weatherProvider)
 
 #pragma warning disable CS8618
 #pragma warning disable IDE1006
-file class CurrentWeatherResponse
+file class CurrentWeatherObject
 {
     public Weather[] weather { get; set; }
     public Main main { get; set; }
