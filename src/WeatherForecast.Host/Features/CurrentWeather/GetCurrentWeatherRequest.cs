@@ -9,9 +9,9 @@ using WeatherForecast.Host.Extensions;
 
 namespace WeatherForecast.Host.Features.CurrentWeather;
 
-public static class GetCurrentWeather
+public record GetCurrentWeatherRequest(string City) : IRequest<ApiResponse<GetCurrentWeatherResponse>>
 {
-    public static async Task<IResult> ByCityEndpoint([FromQuery(Name = "city")] string city, IMediator mediator)
+    public static async Task<IResult> Endpoint([FromQuery(Name = "city")] string city, IMediator mediator)
     {
         var result = await mediator.Send(new GetCurrentWeatherRequest(city));
 
@@ -20,8 +20,6 @@ public static class GetCurrentWeather
             : result.ToProblemResult();
     }
 }
-
-public record GetCurrentWeatherRequest(string City) : IRequest<ApiResponse<GetCurrentWeatherResponse>>;
 
 public class GetCurrentWeatherByCityValidator : AbstractValidator<GetCurrentWeatherRequest>
 {

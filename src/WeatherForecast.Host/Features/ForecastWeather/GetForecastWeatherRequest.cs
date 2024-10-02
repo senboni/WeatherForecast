@@ -10,9 +10,9 @@ using WeatherForecast.Host.Extensions;
 
 namespace WeatherForecast.Host.Features.ForecastWeather;
 
-public static class GetForecastWeather
+public record GetForecastWeatherRequest(string City, DateTime? DateTime = null) : IRequest<ApiResponse<GetForecastWeatherResponse>>
 {
-    public static async Task<IResult> ByCityEndpoint(
+    public static async Task<IResult> Endpoint(
         IMediator mediator,
         [FromQuery(Name = "city")] string city,
         [FromQuery(Name = "date")] DateTime? dateTime = null)
@@ -24,8 +24,6 @@ public static class GetForecastWeather
             : result.ToProblemResult();
     }
 }
-
-public record GetForecastWeatherRequest(string City, DateTime? DateTime = null) : IRequest<ApiResponse<GetForecastWeatherResponse>>;
 
 public class GetForecastWeatherByCityValidator : AbstractValidator<GetForecastWeatherRequest>
 {

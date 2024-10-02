@@ -2,13 +2,11 @@
 using Serilog;
 using System.Threading;
 using System.Threading.Tasks;
-using WeatherForecast.Host.Common;
 
 namespace WeatherForecast.Host.PipelineBehaviors;
 
 public class LoggingBehavior<TRequest, TResponse>(ILogger logger) : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
-    where TResponse : ApiResponse<object>
 {
     private readonly ILogger _logger = logger;
 

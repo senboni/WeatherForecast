@@ -5,11 +5,10 @@ namespace WeatherForecast.Host.Common;
 public class ApiResponse
 {
     public bool IsSuccess { get; init; }
-    public bool IsFailure => !IsSuccess;
     public string Message { get; init; }
     public HttpStatusCode StatusCode { get; init; }
 
-    protected ApiResponse(bool isSuccess, string message, HttpStatusCode statusCode)
+    private ApiResponse(bool isSuccess, string message, HttpStatusCode statusCode)
     {
         IsSuccess = isSuccess;
         Message = message;
@@ -23,14 +22,19 @@ public class ApiResponse
         => new(false, message, statusCode);
 }
 
-public class ApiResponse<TValue> : ApiResponse where TValue : class
+public class ApiResponse<TValue> where TValue : class
 {
     public TValue? Value { get; init; }
+    public bool IsSuccess { get; init; }
+    public string Message { get; init; }
+    public HttpStatusCode StatusCode { get; init; }
 
-    protected ApiResponse(TValue? value, bool isSuccess, string message, HttpStatusCode statusCode)
-        : base(isSuccess, message, statusCode)
+    private ApiResponse(TValue? value, bool isSuccess, string message, HttpStatusCode statusCode)
     {
         Value = value;
+        IsSuccess = isSuccess;
+        Message = message;
+        StatusCode = statusCode;
     }
 
     public static ApiResponse<TValue> Success(TValue value, string message = "", HttpStatusCode statusCode = HttpStatusCode.OK)

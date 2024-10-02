@@ -27,11 +27,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/currentweather", GetCurrentWeather.ByCityEndpoint)
+app.MapGet("/currentweather", GetCurrentWeatherRequest.Endpoint)
     .WithName("GetCurrentWeather")
     .WithOpenApi();
 
-app.MapGet("/forecastweather", GetForecastWeather.ByCityEndpoint)
+app.MapGet("/forecastweather", GetForecastWeatherRequest.Endpoint)
     .WithName("GetForecastWeather")
     .WithOpenApi();
 
