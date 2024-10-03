@@ -99,7 +99,7 @@ GET /forecastweather?city=Paris&unit=c
 ## Error Handling
 
 - 400 Bad Request: If required parameters are missing or invalid.
-- 404 Not Found: If the city is not found in the database.
+- 404 Not Found: If the city is not found by the weather provider.
 - 500 Internal Server Error: If there is an issue with the weather provider or server.
 - Example Error Responses:
 ```json
@@ -143,13 +143,14 @@ dotnet --version
 - API Key: You will need an API key from [OpenWeatherMap](https://openweathermap.org/). This API key will be used to fetch weather data.
 
 ### Configuration
-- Once you have obtained your OpenWeatherMap API key, add it to the project using the dotnet CLI and the user-secrets feature. Run the following command to set up your API key:
+- Once you have obtained your OpenWeatherMap API key, add it to the project using the dotnet CLI and the user-secrets feature.
+- Run the following command from project path to set up your API key:
 ```bash
 dotnet user-secrets set "OpenWeatherMapApiKey" "<Your-API-Key>"
 ```
 
 ### Running the Project
-1. Build and run:
+1. Run the following commands from project path:
 ```bash
 dotnet build
 dotnet run
