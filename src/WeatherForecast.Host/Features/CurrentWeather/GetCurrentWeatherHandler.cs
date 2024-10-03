@@ -1,6 +1,5 @@
-﻿using MediatR;
+﻿using CSharpFunctionalExtensions;
 using System.Linq;
-using System.Net;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,20 +9,26 @@ using WeatherForecast.Host.WeatherProviders;
 
 namespace WeatherForecast.Host.Features.CurrentWeather;
 
-public class GetCurrentWeatherHandler(IWeatherProvider weatherProvider)
-    : IRequestHandler<GetCurrentWeatherRequest, ApiResponse<GetCurrentWeatherResponse>>
+public static class GetCurrentWeatherHandler
 {
-    private readonly IWeatherProvider _weatherProvider = weatherProvider;
-
-    public async Task<ApiResponse<GetCurrentWeatherResponse>> Handle(GetCurrentWeatherRequest request, CancellationToken cancellationToken)
+    public static async Task<IResult<GetCurrentWeatherResponse, Error>> Handle(
+        GetCurrentWeatherRequest request,
+        IWeatherProvider weatherProvider,
+        CancellationToken cancellationToken)
     {
-        using var currentWeatherResponse = await _weatherProvider.GetCurrentWeather(request.City);
+        if (string.IsNullOrEmpty(request.City))
+        {
+            return Result.Failure<GetCurrentWeatherResponse, Error>(
+                Error.UserError("City parameter must not be empty."));
+        }
+
+        using var currentWeatherResponse = await weatherProvider.GetCurrentWeather(request.City);
 
         if (!currentWeatherResponse.IsSuccessStatusCode)
         {
-            return ApiResponse<GetCurrentWeatherResponse>.Failure(
+            return Result.Failure<GetCurrentWeatherResponse, Error>(new Error(
                 message: $"Weather provider's response code ({currentWeatherResponse.StatusCode}) does not indicate success.",
-                statusCode: currentWeatherResponse.StatusCode);
+                statusCode: currentWeatherResponse.StatusCode));
         }
 
         using var stream = await currentWeatherResponse.Content.ReadAsStreamAsync(cancellationToken);
@@ -31,15 +36,14 @@ public class GetCurrentWeatherHandler(IWeatherProvider weatherProvider)
 
         if (currentWeatherObject is null)
         {
-            return ApiResponse<GetCurrentWeatherResponse>.Failure(
-                message: "Failed deserializing response content.",
-                statusCode: HttpStatusCode.InternalServerError);
+            return Result.Failure<GetCurrentWeatherResponse, Error>(
+                Error.ServerError("Failed deserializing response content."));
         }
 
         var weather = currentWeatherObject.weather.FirstOrDefault();
         var descriptionParts = new string?[] { weather?.main, weather?.description };
 
-        return ApiResponse<GetCurrentWeatherResponse>.Success(new GetCurrentWeatherResponse
+        return Result.Success<GetCurrentWeatherResponse, Error>(new GetCurrentWeatherResponse
         {
             City = currentWeatherObject.name,
             Country = currentWeatherObject.sys.country,

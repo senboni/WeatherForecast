@@ -1,31 +1,28 @@
-﻿using FluentValidation;
-using MediatR;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
-using WeatherForecast.Host.Common;
 using WeatherForecast.Host.Extensions;
+using WeatherForecast.Host.WeatherProviders;
 
 namespace WeatherForecast.Host.Features.CurrentWeather;
 
-public record GetCurrentWeatherRequest(string City) : IRequest<ApiResponse<GetCurrentWeatherResponse>>
+public record GetCurrentWeatherRequest(string City)
 {
-    public static async Task<IResult> Endpoint([FromQuery(Name = "city")] string city, IMediator mediator)
+    public static async Task<IResult> Endpoint(
+        IWeatherProvider weatherProvider,
+        [FromQuery(Name = "city")] string city,
+        CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(new GetCurrentWeatherRequest(city));
+        var result = await GetCurrentWeatherHandler.Handle(
+            new GetCurrentWeatherRequest(city),
+            weatherProvider,
+            cancellationToken);
 
         return result.IsSuccess
             ? Results.Ok(result.Value)
-            : result.ToProblemResult();
-    }
-}
-
-public class GetCurrentWeatherByCityValidator : AbstractValidator<GetCurrentWeatherRequest>
-{
-    public GetCurrentWeatherByCityValidator()
-    {
-        RuleFor(x => x.City).NotEmpty();
+            : result.Error.ToProblemResult();
     }
 }
 

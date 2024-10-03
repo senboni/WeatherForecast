@@ -10,29 +10,23 @@ public static class HelperExtensions
     public static DateTime ToDateTime(this int unixTimestamp)
         => new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(unixTimestamp);
 
-    public static IResult ToProblem(this ApiResponse response)
-        => Results.Problem(
-            title: response.StatusCode.ToString(),
-            statusCode: (int)response.StatusCode,
-            detail: response.Message);
-
-    public static IResult ToProblemResult<TValue>(this ApiResponse<TValue> response) where TValue : class
+    public static IResult ToProblemResult(this Error error)
     {
-        if (response.Value is null)
+        if (error.Messages.Length <= 1)
         {
             return Results.Problem(
-                title: response.StatusCode.ToString(),
-                statusCode: (int)response.StatusCode,
-                detail: response.Message);
+                title: error.StatusCode.ToString(),
+                statusCode: (int)error.StatusCode,
+                detail: error.Messages[0]);
         }
 
         return Results.Problem(
-            title: response.StatusCode.ToString(),
-            statusCode: (int)response.StatusCode,
-            detail: response.Message,
+            title: error.StatusCode.ToString(),
+            statusCode: (int)error.StatusCode,
+            detail: "Multiple errors occurred.",
             extensions: new Dictionary<string, object?>
             {
-                { "error", response.Value }
+                { "errors", error.Messages },
             });
     }
 }

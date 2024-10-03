@@ -1,7 +1,6 @@
-﻿using MediatR;
+﻿using CSharpFunctionalExtensions;
 using System;
 using System.Linq;
-using System.Net;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,20 +10,26 @@ using WeatherForecast.Host.WeatherProviders;
 
 namespace WeatherForecast.Host.Features.ForecastWeather;
 
-public class GetForecastWeatherHandler(IWeatherProvider weatherProvider)
-    : IRequestHandler<GetForecastWeatherRequest, ApiResponse<GetForecastWeatherResponse>>
+public static class GetForecastWeatherHandler
 {
-    private readonly IWeatherProvider _weatherProvider = weatherProvider;
-
-    public async Task<ApiResponse<GetForecastWeatherResponse>> Handle(GetForecastWeatherRequest request, CancellationToken cancellationToken)
+    public static async Task<IResult<GetForecastWeatherResponse, Error>> Handle(
+        GetForecastWeatherRequest request,
+        IWeatherProvider weatherProvider,
+        CancellationToken cancellationToken)
     {
-        using var forecastResponse = await _weatherProvider.GetForecastWeather(request.City);
+        if (string.IsNullOrEmpty(request.City))
+        {
+            return Result.Failure<GetForecastWeatherResponse, Error>(
+                Error.UserError("City parameter must not be empty."));
+        }
+
+        using var forecastResponse = await weatherProvider.GetForecastWeather(request.City);
 
         if (!forecastResponse.IsSuccessStatusCode)
         {
-            return ApiResponse<GetForecastWeatherResponse>.Failure(
+            return Result.Failure<GetForecastWeatherResponse, Error>(new Error(
                 message: $"Weather provider's response code ({forecastResponse.StatusCode}) does not indicate success.",
-            statusCode: forecastResponse.StatusCode);
+                statusCode: forecastResponse.StatusCode));
         }
 
         using var stream = await forecastResponse.Content.ReadAsStreamAsync(cancellationToken);
@@ -32,17 +37,18 @@ public class GetForecastWeatherHandler(IWeatherProvider weatherProvider)
 
         if (forecastObject is null)
         {
-            return ApiResponse<GetForecastWeatherResponse>.Failure(
-                message: "Failed deserializing response content.",
-                statusCode: HttpStatusCode.InternalServerError);
+            return Result.Failure<GetForecastWeatherResponse, Error>(
+                Error.ServerError("Failed deserializing response content."));
         }
 
-        return request.DateTime is null
+        var result = request.DateTime is null
             ? allForecasts()
             : forecastForDate((DateTime)request.DateTime);
 
-        ApiResponse<GetForecastWeatherResponse> allForecasts()
-            => ApiResponse<GetForecastWeatherResponse>.Success(new GetForecastWeatherResponse
+        return Result.Success<GetForecastWeatherResponse, Error>(result);
+
+        GetForecastWeatherResponse allForecasts()
+            => new()
             {
                 City = forecastObject.city.name,
                 Country = forecastObject.city.country,
@@ -59,15 +65,15 @@ public class GetForecastWeatherHandler(IWeatherProvider weatherProvider)
                         WindSpeed = x.wind.speed,
                     };
                 }),
-            });
+            };
 
-        ApiResponse<GetForecastWeatherResponse> forecastForDate(DateTime date)
+        GetForecastWeatherResponse forecastForDate(DateTime date)
         {
             var closestMatch = findClosest(forecastObject.list, date);
             var weather = closestMatch.weather.FirstOrDefault();
             var descriptionParts = new string?[] { weather?.main, weather?.description };
 
-            return ApiResponse<GetForecastWeatherResponse>.Success(new GetForecastWeatherResponse
+            return new GetForecastWeatherResponse
             {
                 City = forecastObject.city.name,
                 Country = forecastObject.city.country,
@@ -78,7 +84,7 @@ public class GetForecastWeatherHandler(IWeatherProvider weatherProvider)
                     Temperature = closestMatch.main.temp,
                     WindSpeed = closestMatch.wind.speed,
                 }],
-            });
+            };
         }
 
         Forecast findClosest(Forecast[] forecasts, DateTime targetDate)
