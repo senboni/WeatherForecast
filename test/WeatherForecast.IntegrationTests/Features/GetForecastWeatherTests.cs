@@ -6,8 +6,6 @@ namespace WeatherForecast.IntegrationTests.Features;
 
 public class GetForecastWeatherTests(ApiFixture fixture) : IntegrationTestBase(fixture)
 {
-    private static readonly JsonSerializerOptions _serializerOptions = new(JsonSerializerDefaults.Web);
-
     [Fact]
     public async Task GetForecastWeather_GivenCity_ShouldReturnForecastWeather()
     {
@@ -33,7 +31,7 @@ public class GetForecastWeatherTests(ApiFixture fixture) : IntegrationTestBase(f
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var stream = await response.Content.ReadAsStreamAsync();
-        var actualModel = (await JsonSerializer.DeserializeAsync<GetForecastWeather.Response>(stream, _serializerOptions))!;
+        var actualModel = (await JsonSerializer.DeserializeAsync<GetForecastWeather.Response>(stream, Helpers.SerializerOptions))!;
 
         Assert.Equal(expectedModel.City, actualModel.City);
         Assert.Equal(expectedModel.Country, actualModel.Country);
@@ -66,7 +64,7 @@ public class GetForecastWeatherTests(ApiFixture fixture) : IntegrationTestBase(f
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var stream = await response.Content.ReadAsStreamAsync();
-        var actualModel = (await JsonSerializer.DeserializeAsync<GetForecastWeather.Response>(stream, _serializerOptions))!;
+        var actualModel = (await JsonSerializer.DeserializeAsync<GetForecastWeather.Response>(stream, Helpers.SerializerOptions))!;
 
         Assert.Equal(expectedModel.City, actualModel.City);
         Assert.Equal(expectedModel.Country, actualModel.Country);

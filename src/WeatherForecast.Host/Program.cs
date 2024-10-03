@@ -21,6 +21,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseGlobalExceptionHandler();
 
 app.MapGet("/currentweather", GetCurrentWeather.Endpoint)
     .WithName("GetCurrentWeather")

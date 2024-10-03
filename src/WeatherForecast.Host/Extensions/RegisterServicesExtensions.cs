@@ -6,7 +6,7 @@ using WeatherForecast.Host.WeatherProviders;
 
 namespace WeatherForecast.Host.Extensions;
 
-public static class ConfigureServices
+public static class RegisterServicesExtensions
 {
     public static void AddOpenWeatherMapWeatherProvider(this IServiceCollection services, IConfiguration configuration)
     {

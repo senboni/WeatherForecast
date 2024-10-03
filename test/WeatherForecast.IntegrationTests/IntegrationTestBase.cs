@@ -1,11 +1,6 @@
 ﻿namespace WeatherForecast.IntegrationTests;
 
-public class IntegrationTestBase : IClassFixture<ApiFixture>
+public class IntegrationTestBase(ApiFixture fixture) : IClassFixture<ApiFixture>
 {
-    protected readonly ApiFixture ApiFixture;
-
-    public IntegrationTestBase(ApiFixture fixture)
-    {
-        ApiFixture = fixture;
-    }
+    protected readonly ApiFixture ApiFixture = fixture;
 }

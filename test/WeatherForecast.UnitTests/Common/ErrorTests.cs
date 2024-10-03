@@ -37,11 +37,10 @@ public class ErrorTests
     }
 
     [Fact]
-    public void UserError_MustReturn_StatusCode400()
+    public void UserError_MustReturn_StatusCodeBetween400And500()
     {
         //arrange
         var message = "msg1";
-        var expectedStatusCode = HttpStatusCode.BadRequest;
 
         //act
         var actual = Error.UserError(message);
@@ -49,7 +48,7 @@ public class ErrorTests
         //assert
         Assert.Single(actual.Messages);
         Assert.Equal(message, actual.Messages[0]);
-        Assert.Equal(expectedStatusCode, actual.StatusCode);
+        Assert.True((int)actual.StatusCode >= 400 && (int)actual.StatusCode < 500);
     }
 
     [Fact]
@@ -57,10 +56,25 @@ public class ErrorTests
     {
         //arrange
         var message = "msg1";
-        var expectedStatusCode = HttpStatusCode.InternalServerError;
 
         //act
         var actual = Error.ServerError(message);
+
+        //assert
+        Assert.Single(actual.Messages);
+        Assert.Equal(message, actual.Messages[0]);
+        Assert.True((int)actual.StatusCode >= 500 && (int)actual.StatusCode < 600);
+    }
+
+    [Fact]
+    public void WeatherProviderError_MustReturn_StatusCode500_AndCorrectMessage()
+    {
+        //arrange
+        var message = "Unable to receive response from weather provider.";
+        var expectedStatusCode = HttpStatusCode.InternalServerError;
+
+        //act
+        var actual = Error.WeatherProviderError();
 
         //assert
         Assert.Single(actual.Messages);

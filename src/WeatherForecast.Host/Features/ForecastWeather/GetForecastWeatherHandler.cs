@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using System;
 using System.Linq;
+using System.Net;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,11 +32,16 @@ public static class GetForecastWeatherHandler
 
         using var forecastResponse = await weatherProvider.GetForecastWeather(request.City, request.Unit);
 
+        if (forecastResponse.StatusCode is HttpStatusCode.NotFound)
+        {
+            return Result.Failure<GetForecastWeather.Response, Error>(
+                Error.UserError("Unable to find city.", HttpStatusCode.NotFound));
+        }
+
         if (!forecastResponse.IsSuccessStatusCode)
         {
-            return Result.Failure<GetForecastWeather.Response, Error>(new Error(
-                message: $"Weather provider's response code ({forecastResponse.StatusCode}) does not indicate success.",
-                statusCode: forecastResponse.StatusCode));
+            return Result.Failure<GetForecastWeather.Response, Error>(
+                Error.WeatherProviderError());
         }
 
         using var stream = await forecastResponse.Content.ReadAsStreamAsync(cancellationToken);
@@ -44,7 +50,7 @@ public static class GetForecastWeatherHandler
         if (forecastObject is null)
         {
             return Result.Failure<GetForecastWeather.Response, Error>(
-                Error.ServerError("Unable to receive response from weather provider."));
+                Error.WeatherProviderError());
         }
 
         var result = request.DateTime is null

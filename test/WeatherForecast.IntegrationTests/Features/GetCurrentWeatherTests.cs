@@ -6,8 +6,6 @@ namespace WeatherForecast.IntegrationTests.Features;
 
 public class GetCurrentWeatherTests(ApiFixture fixture) : IntegrationTestBase(fixture)
 {
-    private static readonly JsonSerializerOptions _serializerOptions = new(JsonSerializerDefaults.Web);
-
     [Fact]
     public async Task GetCurrentWeather_GivenCity_ShouldReturnCurrentWeather()
     {
@@ -29,7 +27,7 @@ public class GetCurrentWeatherTests(ApiFixture fixture) : IntegrationTestBase(fi
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var stream = await response.Content.ReadAsStreamAsync();
-        var actualModel = await JsonSerializer.DeserializeAsync<GetCurrentWeather.Response>(stream, _serializerOptions);
+        var actualModel = await JsonSerializer.DeserializeAsync<GetCurrentWeather.Response>(stream, Helpers.SerializerOptions);
 
         Assert.Equal(expectedModel, actualModel);
     }

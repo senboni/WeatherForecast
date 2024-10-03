@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using WeatherForecast.Host.Common;
@@ -29,4 +31,9 @@ public static class HelperExtensions
                 { "errors", error.Messages },
             });
     }
+
+    public static ProblemDetails ToProblemDetails(this IResult error)
+        => error is ProblemHttpResult result
+            ? result.ProblemDetails
+            : new ProblemDetails();
 }
