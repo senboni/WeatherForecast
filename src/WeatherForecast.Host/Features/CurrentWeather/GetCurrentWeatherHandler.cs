@@ -22,7 +22,13 @@ public static class GetCurrentWeatherHandler
                 Error.UserError("City parameter must not be empty."));
         }
 
-        using var currentWeatherResponse = await weatherProvider.GetCurrentWeather(request.City);
+        if (Constants.TemperatureUnits.All(x => x != request.Unit))
+        {
+            return Result.Failure<GetCurrentWeather.Response, Error>(
+                Error.UserError("Invalid temperature unit. Available units: c (celsius), f (fahrenheit), k (kelvin)."));
+        }
+
+        using var currentWeatherResponse = await weatherProvider.GetCurrentWeather(request.City, request.Unit);
 
         if (!currentWeatherResponse.IsSuccessStatusCode)
         {
@@ -37,18 +43,18 @@ public static class GetCurrentWeatherHandler
         if (currentWeatherObject is null)
         {
             return Result.Failure<GetCurrentWeather.Response, Error>(
-                Error.ServerError("Failed deserializing response content."));
+                Error.ServerError("Unable to receive response from weather provider."));
         }
 
         var weather = currentWeatherObject.weather.FirstOrDefault();
-        var descriptionParts = new string?[] { weather?.main, weather?.description };
+        var description = Make.WeatherDescription(currentWeatherObject.main.temp, request.Unit, weather?.main, weather?.description);
 
         return Result.Success<GetCurrentWeather.Response, Error>(new GetCurrentWeather.Response
         {
             City = currentWeatherObject.name,
             Country = currentWeatherObject.sys.country,
             DateTime = currentWeatherObject.dt.ToDateTime(),
-            Description = string.Join(", ", descriptionParts.Where(x => !string.IsNullOrEmpty(x))),
+            Description = description,
             Temperature = currentWeatherObject.main.temp,
             WindSpeed = currentWeatherObject.wind.speed,
         });

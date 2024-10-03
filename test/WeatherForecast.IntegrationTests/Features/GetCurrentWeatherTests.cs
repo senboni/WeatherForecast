@@ -17,13 +17,13 @@ public class GetCurrentWeatherTests(ApiFixture fixture) : IntegrationTestBase(fi
             City = "London",
             Country = "GB",
             DateTime = new DateTime(2024, 10, 3, 10, 27, 37),
-            Description = "Clouds, broken clouds",
+            Description = "Clouds, broken clouds, 286° K",
             Temperature = 286.2,
             WindSpeed = 0.45,
         };
 
         //act
-        var response = await ApiFixture.HttpClient.GetAsync("/currentweather?city=London");
+        var response = await ApiFixture.HttpClient.GetAsync("/currentweather?city=London&unit=k");
 
         //assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

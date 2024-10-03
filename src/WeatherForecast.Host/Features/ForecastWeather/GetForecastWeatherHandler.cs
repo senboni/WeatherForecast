@@ -23,7 +23,13 @@ public static class GetForecastWeatherHandler
                 Error.UserError("City parameter must not be empty."));
         }
 
-        using var forecastResponse = await weatherProvider.GetForecastWeather(request.City);
+        if (Constants.TemperatureUnits.All(x => x != request.Unit))
+        {
+            return Result.Failure<GetForecastWeather.Response, Error>(
+                Error.UserError("Invalid temperature unit. Available units: c (celsius), f (fahrenheit), k (kelvin)."));
+        }
+
+        using var forecastResponse = await weatherProvider.GetForecastWeather(request.City, request.Unit);
 
         if (!forecastResponse.IsSuccessStatusCode)
         {
@@ -38,7 +44,7 @@ public static class GetForecastWeatherHandler
         if (forecastObject is null)
         {
             return Result.Failure<GetForecastWeather.Response, Error>(
-                Error.ServerError("Failed deserializing response content."));
+                Error.ServerError("Unable to receive response from weather provider."));
         }
 
         var result = request.DateTime is null
@@ -55,12 +61,11 @@ public static class GetForecastWeatherHandler
                 Forecasts = forecastObject.list.Select(x =>
                 {
                     var weather = x.weather.FirstOrDefault();
-                    var descriptionParts = new string?[] { weather?.main, weather?.description };
 
                     return new GetForecastWeather.Response.Forecast
                     {
                         DateTime = x.dt.ToDateTime(),
-                        Description = string.Join(", ", descriptionParts.Where(x => !string.IsNullOrEmpty(x))),
+                        Description = Make.WeatherDescription(x.main.temp, request.Unit, weather?.main, weather?.description),
                         Temperature = x.main.temp,
                         WindSpeed = x.wind.speed,
                     };
@@ -72,7 +77,6 @@ public static class GetForecastWeatherHandler
         {
             var closestMatch = findClosest(forecastObject.list, date);
             var weather = closestMatch.weather.FirstOrDefault();
-            var descriptionParts = new string?[] { weather?.main, weather?.description };
 
             return new GetForecastWeather.Response
             {
@@ -81,7 +85,7 @@ public static class GetForecastWeatherHandler
                 Forecasts = [new GetForecastWeather.Response.Forecast
                 {
                     DateTime = closestMatch.dt.ToDateTime(),
-                    Description = string.Join(", ", descriptionParts.Where(x => !string.IsNullOrEmpty(x))),
+                    Description = Make.WeatherDescription(closestMatch.main.temp, request.Unit, weather?.main, weather?.description),
                     Temperature = closestMatch.main.temp,
                     WindSpeed = closestMatch.wind.speed,
                 }],

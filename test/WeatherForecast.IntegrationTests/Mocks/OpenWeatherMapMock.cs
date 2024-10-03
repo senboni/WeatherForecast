@@ -3,9 +3,9 @@ using WeatherForecast.Host.WeatherProviders;
 
 namespace WeatherForecast.IntegrationTests.Mocks;
 
-public class MockWeatherProvider : IWeatherProvider
+public class OpenWeatherMapMock : IWeatherProvider
 {
-    public async Task<HttpResponseMessage> GetCurrentWeather(string city)
+    public async Task<HttpResponseMessage> GetCurrentWeather(string city, string unit)
     {
         var (testFile, statusCode) = city.ToLower() switch
         {
@@ -23,7 +23,7 @@ public class MockWeatherProvider : IWeatherProvider
         };
     }
 
-    public async Task<HttpResponseMessage> GetForecastWeather(string city)
+    public async Task<HttpResponseMessage> GetForecastWeather(string city, string unit)
     {
         var (testFile, statusCode) = city.ToLower() switch
         {

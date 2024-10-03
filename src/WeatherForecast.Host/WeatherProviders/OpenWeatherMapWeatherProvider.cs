@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,16 +13,23 @@ public class OpenWeatherMapWeatherProvider(IHttpClientFactory httpClientFactory)
 {
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
 
-    public async Task<HttpResponseMessage> GetCurrentWeather(string city)
+    private static readonly Dictionary<string, string> _units = new()
+    {
+        { "C", "metric" },
+        { "F", "imperial" },
+        { "K", "standard" },
+    };
+
+    public async Task<HttpResponseMessage> GetCurrentWeather(string city, string unit)
     {
         var client = _httpClientFactory.CreateClient(Constants.OpenWeatherMapClient);
-        return await client.GetAsync($"/weather?q={city}");
+        return await client.GetAsync($"/weather?q={city}&units={_units[unit]}");
     }
 
-    public async Task<HttpResponseMessage> GetForecastWeather(string city)
+    public async Task<HttpResponseMessage> GetForecastWeather(string city, string unit)
     {
         var client = _httpClientFactory.CreateClient(Constants.OpenWeatherMapClient);
-        return await client.GetAsync($"/forecast?q={city}");
+        return await client.GetAsync($"/forecast?q={city}&units={_units[unit]}");
     }
 
     public class Handler(IConfiguration configuration) : DelegatingHandler

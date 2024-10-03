@@ -22,7 +22,7 @@ public class ApiFixture : WebApplicationFactory<Program>
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll(typeof(IWeatherProvider));
-            services.AddSingleton<IWeatherProvider, MockWeatherProvider>();
+            services.AddSingleton<IWeatherProvider, OpenWeatherMapMock>();
         });
 
         builder.UseEnvironment("Development");

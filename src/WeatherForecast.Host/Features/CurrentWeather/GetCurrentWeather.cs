@@ -13,9 +13,10 @@ public static class GetCurrentWeather
     public static async Task<IResult> Endpoint(
         IWeatherProvider weatherProvider,
         [FromQuery(Name = "city")] string city,
-        CancellationToken cancellationToken)
+        [FromQuery(Name = "unit")] string unit = "c",
+        CancellationToken cancellationToken = default)
     {
-        var request = new Request(city);
+        var request = new Request(city, unit.ToUpper());
         var result = await GetCurrentWeatherHandler.Handle(request, weatherProvider, cancellationToken);
 
         return result.IsSuccess
@@ -23,7 +24,7 @@ public static class GetCurrentWeather
             : result.Error.ToProblemResult();
     }
 
-    public record Request(string City);
+    public record Request(string City, string Unit);
 
     public record Response
     {

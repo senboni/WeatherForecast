@@ -6,6 +6,6 @@ namespace WeatherForecast.Host.WeatherProviders;
 
 public interface IWeatherProvider
 {
-    Task<HttpResponseMessage> GetCurrentWeather(string city);
-    Task<HttpResponseMessage> GetForecastWeather(string city);
+    Task<HttpResponseMessage> GetCurrentWeather(string city, string unit);
+    Task<HttpResponseMessage> GetForecastWeather(string city, string unit);
 }
