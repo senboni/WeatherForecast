@@ -25,7 +25,7 @@ public static class GetCurrentWeather
 
     public record Request(string City);
 
-    public class Response
+    public record Response
     {
         public required string Description { get; init; }
         public required double Temperature { get; init; }

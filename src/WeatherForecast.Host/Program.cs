@@ -22,7 +22,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/currentweather", GetCurrentWeatherRequest.Endpoint)
+app.MapGet("/currentweather", GetCurrentWeather.Endpoint)
     .WithName("GetCurrentWeather")
     .WithOpenApi();
 
@@ -31,3 +31,5 @@ app.MapGet("/forecastweather", GetForecastWeather.Endpoint)
     .WithOpenApi();
 
 app.Run();
+
+public partial class Program { }

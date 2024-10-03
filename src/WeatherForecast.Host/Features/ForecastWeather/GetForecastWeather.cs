@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using WeatherForecast.Host.Extensions;
@@ -27,13 +26,13 @@ public static class GetForecastWeather
 
     public record Request(string City, DateTime? DateTime = null);
 
-    public class Response
+    public record Response
     {
-        public required IEnumerable<Forecast> Forecasts { get; init; }
+        public required Forecast[] Forecasts { get; init; }
         public required string City { get; init; }
         public required string Country { get; init; }
 
-        public class Forecast
+        public record Forecast
         {
             public required string Description { get; init; }
             public required double Temperature { get; init; }

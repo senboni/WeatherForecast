@@ -57,14 +57,15 @@ public static class GetForecastWeatherHandler
                     var weather = x.weather.FirstOrDefault();
                     var descriptionParts = new string?[] { weather?.main, weather?.description };
 
-                    return new GetForecastWeatherResponse.Forecast
+                    return new GetForecastWeather.Response.Forecast
                     {
                         DateTime = x.dt.ToDateTime(),
                         Description = string.Join(", ", descriptionParts.Where(x => !string.IsNullOrEmpty(x))),
                         Temperature = x.main.temp,
                         WindSpeed = x.wind.speed,
                     };
-                }),
+                })
+                .ToArray(),
             };
 
         GetForecastWeather.Response forecastForDate(DateTime date)
@@ -73,11 +74,11 @@ public static class GetForecastWeatherHandler
             var weather = closestMatch.weather.FirstOrDefault();
             var descriptionParts = new string?[] { weather?.main, weather?.description };
 
-            return new GetForecastWeatherResponse
+            return new GetForecastWeather.Response
             {
                 City = forecastObject.city.name,
                 Country = forecastObject.city.country,
-                Forecasts = [new GetForecastWeatherResponse.Forecast
+                Forecasts = [new GetForecastWeather.Response.Forecast
                 {
                     DateTime = closestMatch.dt.ToDateTime(),
                     Description = string.Join(", ", descriptionParts.Where(x => !string.IsNullOrEmpty(x))),
