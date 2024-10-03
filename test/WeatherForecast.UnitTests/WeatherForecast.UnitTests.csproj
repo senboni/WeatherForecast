@@ -17,6 +17,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\..\src\WeatherForecast.Host\WeatherForecast.Host.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Using Include="Xunit" />
 	</ItemGroup>
 

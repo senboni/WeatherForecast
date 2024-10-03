@@ -7,7 +7,7 @@ namespace WeatherForecast.Host.Extensions;
 
 public static class HelperExtensions
 {
-    public static DateTime ToDateTime(this int unixTimestamp)
+    public static DateTime ToDateTime(this double unixTimestamp)
         => new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(unixTimestamp);
 
     public static IResult ToProblemResult(this Error error)

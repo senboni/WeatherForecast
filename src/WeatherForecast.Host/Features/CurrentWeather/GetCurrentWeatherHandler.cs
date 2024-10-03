@@ -68,7 +68,7 @@ file class CurrentWeatherObject
     public Weather[] weather { get; set; }
     public Main main { get; set; }
     public Wind wind { get; set; }
-    public int dt { get; set; }
+    public double dt { get; set; }
     public Sys sys { get; set; }
     public string name { get; set; }
 }

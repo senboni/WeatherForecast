@@ -115,7 +115,7 @@ file class City
 
 file class Forecast
 {
-    public int dt { get; set; }
+    public double dt { get; set; }
     public Main main { get; set; }
     public Weather[] weather { get; set; }
     public Wind wind { get; set; }
