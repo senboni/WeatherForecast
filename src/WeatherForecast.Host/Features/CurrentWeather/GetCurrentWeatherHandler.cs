@@ -11,14 +11,14 @@ namespace WeatherForecast.Host.Features.CurrentWeather;
 
 public static class GetCurrentWeatherHandler
 {
-    public static async Task<IResult<GetCurrentWeatherResponse, Error>> Handle(
-        GetCurrentWeatherRequest request,
+    public static async Task<IResult<GetCurrentWeather.Response, Error>> Handle(
+        GetCurrentWeather.Request request,
         IWeatherProvider weatherProvider,
         CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(request.City))
         {
-            return Result.Failure<GetCurrentWeatherResponse, Error>(
+            return Result.Failure<GetCurrentWeather.Response, Error>(
                 Error.UserError("City parameter must not be empty."));
         }
 
@@ -26,7 +26,7 @@ public static class GetCurrentWeatherHandler
 
         if (!currentWeatherResponse.IsSuccessStatusCode)
         {
-            return Result.Failure<GetCurrentWeatherResponse, Error>(new Error(
+            return Result.Failure<GetCurrentWeather.Response, Error>(new Error(
                 message: $"Weather provider's response code ({currentWeatherResponse.StatusCode}) does not indicate success.",
                 statusCode: currentWeatherResponse.StatusCode));
         }
@@ -36,14 +36,14 @@ public static class GetCurrentWeatherHandler
 
         if (currentWeatherObject is null)
         {
-            return Result.Failure<GetCurrentWeatherResponse, Error>(
+            return Result.Failure<GetCurrentWeather.Response, Error>(
                 Error.ServerError("Failed deserializing response content."));
         }
 
         var weather = currentWeatherObject.weather.FirstOrDefault();
         var descriptionParts = new string?[] { weather?.main, weather?.description };
 
-        return Result.Success<GetCurrentWeatherResponse, Error>(new GetCurrentWeatherResponse
+        return Result.Success<GetCurrentWeather.Response, Error>(new GetCurrentWeather.Response
         {
             City = currentWeatherObject.name,
             Country = currentWeatherObject.sys.country,

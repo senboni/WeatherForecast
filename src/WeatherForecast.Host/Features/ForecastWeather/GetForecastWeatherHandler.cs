@@ -12,14 +12,14 @@ namespace WeatherForecast.Host.Features.ForecastWeather;
 
 public static class GetForecastWeatherHandler
 {
-    public static async Task<IResult<GetForecastWeatherResponse, Error>> Handle(
-        GetForecastWeatherRequest request,
+    public static async ValueTask<IResult<GetForecastWeather.Response, Error>> Handle(
+        GetForecastWeather.Request request,
         IWeatherProvider weatherProvider,
         CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(request.City))
         {
-            return Result.Failure<GetForecastWeatherResponse, Error>(
+            return Result.Failure<GetForecastWeather.Response, Error>(
                 Error.UserError("City parameter must not be empty."));
         }
 
@@ -27,7 +27,7 @@ public static class GetForecastWeatherHandler
 
         if (!forecastResponse.IsSuccessStatusCode)
         {
-            return Result.Failure<GetForecastWeatherResponse, Error>(new Error(
+            return Result.Failure<GetForecastWeather.Response, Error>(new Error(
                 message: $"Weather provider's response code ({forecastResponse.StatusCode}) does not indicate success.",
                 statusCode: forecastResponse.StatusCode));
         }
@@ -37,7 +37,7 @@ public static class GetForecastWeatherHandler
 
         if (forecastObject is null)
         {
-            return Result.Failure<GetForecastWeatherResponse, Error>(
+            return Result.Failure<GetForecastWeather.Response, Error>(
                 Error.ServerError("Failed deserializing response content."));
         }
 
@@ -45,9 +45,9 @@ public static class GetForecastWeatherHandler
             ? allForecasts()
             : forecastForDate((DateTime)request.DateTime);
 
-        return Result.Success<GetForecastWeatherResponse, Error>(result);
+        return Result.Success<GetForecastWeather.Response, Error>(result);
 
-        GetForecastWeatherResponse allForecasts()
+        GetForecastWeather.Response allForecasts()
             => new()
             {
                 City = forecastObject.city.name,
@@ -67,7 +67,7 @@ public static class GetForecastWeatherHandler
                 }),
             };
 
-        GetForecastWeatherResponse forecastForDate(DateTime date)
+        GetForecastWeather.Response forecastForDate(DateTime date)
         {
             var closestMatch = findClosest(forecastObject.list, date);
             var weather = closestMatch.weather.FirstOrDefault();

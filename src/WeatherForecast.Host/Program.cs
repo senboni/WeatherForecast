@@ -26,7 +26,7 @@ app.MapGet("/currentweather", GetCurrentWeatherRequest.Endpoint)
     .WithName("GetCurrentWeather")
     .WithOpenApi();
 
-app.MapGet("/forecastweather", GetForecastWeatherRequest.Endpoint)
+app.MapGet("/forecastweather", GetForecastWeather.Endpoint)
     .WithName("GetForecastWeather")
     .WithOpenApi();
 
