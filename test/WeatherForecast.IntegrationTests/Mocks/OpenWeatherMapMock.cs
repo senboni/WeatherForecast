@@ -1,11 +1,13 @@
-﻿using System.Net;
+﻿using CSharpFunctionalExtensions;
+using System.Net;
+using System.Text.Json;
 using WeatherForecast.Host.WeatherProviders;
 
 namespace WeatherForecast.IntegrationTests.Mocks;
 
 public class OpenWeatherMapMock : IWeatherProvider
 {
-    public async Task<HttpResponseMessage> GetCurrentWeather(string city, string unit)
+    public async Task<Result<TValue, HttpStatusCode>> GetCurrentWeather<TValue>(string city, string unit, CancellationToken cancellationToken)
     {
         var (testFile, statusCode) = city.ToLower() switch
         {
@@ -14,16 +16,18 @@ public class OpenWeatherMapMock : IWeatherProvider
             _ => (Path.Combine("TestFiles", "nothing_to_geocode.json"), HttpStatusCode.NotFound),
         };
 
-        var content = await File.ReadAllTextAsync(testFile);
+        using var stream = File.OpenRead(testFile);
+        var value = await JsonSerializer.DeserializeAsync<TValue>(stream, cancellationToken: cancellationToken);
 
-        return new HttpResponseMessage
+        if (value is null || !IsSuccessStatusCode(statusCode))
         {
-            Content = new StringContent(content),
-            StatusCode = statusCode,
-        };
+            return Result.Failure<TValue, HttpStatusCode>(statusCode);
+        }
+
+        return Result.Success<TValue, HttpStatusCode>(value);
     }
 
-    public async Task<HttpResponseMessage> GetForecastWeather(string city, string unit)
+    public async Task<Result<TValue, HttpStatusCode>> GetForecastWeather<TValue>(string city, string unit, CancellationToken cancellationToken)
     {
         var (testFile, statusCode) = city.ToLower() switch
         {
@@ -32,12 +36,17 @@ public class OpenWeatherMapMock : IWeatherProvider
             _ => (Path.Combine("TestFiles", "nothing_to_geocode.json"), HttpStatusCode.NotFound),
         };
 
-        var content = await File.ReadAllTextAsync(testFile);
+        using var stream = File.OpenRead(testFile);
+        var value = await JsonSerializer.DeserializeAsync<TValue>(stream, cancellationToken: cancellationToken);
 
-        return new HttpResponseMessage
+        if (value is null || !IsSuccessStatusCode(statusCode))
         {
-            Content = new StringContent(content),
-            StatusCode = statusCode,
-        };
+            return Result.Failure<TValue, HttpStatusCode>(statusCode);
+        }
+
+        return Result.Success<TValue, HttpStatusCode>(value);
     }
+
+    private static bool IsSuccessStatusCode(HttpStatusCode statusCode)
+        => (int)statusCode >= 200 && (int)statusCode < 300;
 }

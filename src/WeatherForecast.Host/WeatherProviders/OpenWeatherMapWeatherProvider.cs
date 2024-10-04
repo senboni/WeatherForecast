@@ -1,7 +1,10 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using CSharpFunctionalExtensions;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -20,16 +23,36 @@ public class OpenWeatherMapWeatherProvider(IHttpClientFactory httpClientFactory)
         { "K", "standard" },
     };
 
-    public async Task<HttpResponseMessage> GetCurrentWeather(string city, string unit)
+    public async Task<Result<TValue, HttpStatusCode>> GetCurrentWeather<TValue>(string city, string unit, CancellationToken cancellationToken)
     {
         var client = _httpClientFactory.CreateClient(Constants.OpenWeatherMapClient);
-        return await client.GetAsync($"/weather?q={city}&units={_units[unit]}");
+        var response = await client.GetAsync($"/weather?q={city}&units={_units[unit]}", cancellationToken);
+
+        using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        var value = await JsonSerializer.DeserializeAsync<TValue>(stream, cancellationToken: cancellationToken);
+
+        if (value is null || !response.IsSuccessStatusCode)
+        {
+            return Result.Failure<TValue, HttpStatusCode>(response.StatusCode);
+        }
+
+        return Result.Success<TValue, HttpStatusCode>(value);
     }
 
-    public async Task<HttpResponseMessage> GetForecastWeather(string city, string unit)
+    public async Task<Result<TValue, HttpStatusCode>> GetForecastWeather<TValue>(string city, string unit, CancellationToken cancellationToken)
     {
         var client = _httpClientFactory.CreateClient(Constants.OpenWeatherMapClient);
-        return await client.GetAsync($"/forecast?q={city}&units={_units[unit]}");
+        var response = await client.GetAsync($"/forecast?q={city}&units={_units[unit]}", cancellationToken);
+
+        using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        var value = await JsonSerializer.DeserializeAsync<TValue>(stream, cancellationToken: cancellationToken);
+
+        if (value is null || !response.IsSuccessStatusCode)
+        {
+            return Result.Failure<TValue, HttpStatusCode>(response.StatusCode);
+        }
+
+        return Result.Success<TValue, HttpStatusCode>(value);
     }
 
     public class Handler(IConfiguration configuration) : DelegatingHandler

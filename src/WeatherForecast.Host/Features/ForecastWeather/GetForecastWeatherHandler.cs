@@ -2,7 +2,6 @@
 using System;
 using System.Linq;
 using System.Net;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using WeatherForecast.Host.Common;
@@ -30,34 +29,24 @@ public static class GetForecastWeatherHandler
                 Error.UserError("Invalid temperature unit. Available units: c (celsius), f (fahrenheit), k (kelvin)."));
         }
 
-        using var forecastResponse = await weatherProvider.GetForecastWeather(request.City, request.Unit);
+        var result = await weatherProvider.GetForecastWeather<ForecastObject>(request.City, request.Unit, cancellationToken);
 
-        if (forecastResponse.StatusCode is HttpStatusCode.NotFound)
+        if (result.IsFailure)
         {
-            return Result.Failure<GetForecastWeather.Response, Error>(
-                Error.UserError("Unable to find city.", HttpStatusCode.NotFound));
+            return result.Error switch
+            {
+                HttpStatusCode.NotFound => Result.Failure<GetForecastWeather.Response, Error>(Error.UserError("Unable to find city.", HttpStatusCode.NotFound)),
+                _ => Result.Failure<GetForecastWeather.Response, Error>(Error.WeatherProviderError()),
+            };
         }
 
-        if (!forecastResponse.IsSuccessStatusCode)
-        {
-            return Result.Failure<GetForecastWeather.Response, Error>(
-                Error.WeatherProviderError());
-        }
+        var forecastObject = result.Value;
 
-        using var stream = await forecastResponse.Content.ReadAsStreamAsync(cancellationToken);
-        var forecastObject = await JsonSerializer.DeserializeAsync<ForecastObject>(stream, cancellationToken: cancellationToken);
-
-        if (forecastObject is null)
-        {
-            return Result.Failure<GetForecastWeather.Response, Error>(
-                Error.WeatherProviderError());
-        }
-
-        var result = request.DateTime is null
+        var response = request.DateTime is null
             ? allForecasts()
             : forecastForDate((DateTime)request.DateTime);
 
-        return Result.Success<GetForecastWeather.Response, Error>(result);
+        return Result.Success<GetForecastWeather.Response, Error>(response);
 
         GetForecastWeather.Response allForecasts()
             => new()

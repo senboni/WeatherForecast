@@ -1,11 +1,12 @@
-﻿
-using System.Net.Http;
+﻿using CSharpFunctionalExtensions;
+using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace WeatherForecast.Host.WeatherProviders;
 
 public interface IWeatherProvider
 {
-    Task<HttpResponseMessage> GetCurrentWeather(string city, string unit);
-    Task<HttpResponseMessage> GetForecastWeather(string city, string unit);
+    Task<Result<TValue, HttpStatusCode>> GetCurrentWeather<TValue>(string city, string unit, CancellationToken cancellationToken);
+    Task<Result<TValue, HttpStatusCode>> GetForecastWeather<TValue>(string city, string unit, CancellationToken cancellationToken);
 }

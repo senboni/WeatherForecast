@@ -1,15 +1,17 @@
-﻿using WeatherForecast.Host.WeatherProviders;
+﻿using CSharpFunctionalExtensions;
+using System.Net;
+using WeatherForecast.Host.WeatherProviders;
 
 namespace WeatherForecast.IntegrationTests.Mocks;
 
 public class BrokenWeatherProviderMock : IWeatherProvider
 {
-    public Task<HttpResponseMessage> GetCurrentWeather(string city, string unit)
+    public Task<Result<TValue, HttpStatusCode>> GetCurrentWeather<TValue>(string city, string unit, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
 
-    public Task<HttpResponseMessage> GetForecastWeather(string city, string unit)
+    public Task<Result<TValue, HttpStatusCode>> GetForecastWeather<TValue>(string city, string unit, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

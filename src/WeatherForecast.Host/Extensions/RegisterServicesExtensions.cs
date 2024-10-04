@@ -11,7 +11,8 @@ public static class RegisterServicesExtensions
     public static void AddOpenWeatherMapWeatherProvider(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddOpenWeatherMapClient(configuration);
-        services.AddSingleton<IWeatherProvider, OpenWeatherMapWeatherProvider>();
+        services.AddSingleton<OpenWeatherMapWeatherProvider>();
+        services.AddSingleton<IWeatherProvider, OpenWeatherMapWeatherProviderCached>();
     }
 
     private static void AddOpenWeatherMapClient(this IServiceCollection services, IConfiguration configuration)

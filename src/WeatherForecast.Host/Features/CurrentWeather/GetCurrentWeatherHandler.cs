@@ -1,7 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using System.Linq;
 using System.Net;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using WeatherForecast.Host.Common;
@@ -29,29 +28,18 @@ public static class GetCurrentWeatherHandler
                 Error.UserError("Invalid temperature unit. Available units: c (celsius), f (fahrenheit), k (kelvin)."));
         }
 
-        using var currentWeatherResponse = await weatherProvider.GetCurrentWeather(request.City, request.Unit);
+        var result = await weatherProvider.GetCurrentWeather<CurrentWeatherObject>(request.City, request.Unit, cancellationToken);
 
-        if (currentWeatherResponse.StatusCode is HttpStatusCode.NotFound)
+        if (result.IsFailure)
         {
-            return Result.Failure<GetCurrentWeather.Response, Error>(
-                Error.UserError("Unable to find city.", HttpStatusCode.NotFound));
+            return result.Error switch
+            {
+                HttpStatusCode.NotFound => Result.Failure<GetCurrentWeather.Response, Error>(Error.UserError("Unable to find city.", HttpStatusCode.NotFound)),
+                _ => Result.Failure<GetCurrentWeather.Response, Error>(Error.WeatherProviderError()),
+            };
         }
 
-        if (!currentWeatherResponse.IsSuccessStatusCode)
-        {
-            return Result.Failure<GetCurrentWeather.Response, Error>(
-                Error.WeatherProviderError());
-        }
-
-        using var stream = await currentWeatherResponse.Content.ReadAsStreamAsync(cancellationToken);
-        var currentWeatherObject = await JsonSerializer.DeserializeAsync<CurrentWeatherObject>(stream, cancellationToken: cancellationToken);
-
-        if (currentWeatherObject is null)
-        {
-            return Result.Failure<GetCurrentWeather.Response, Error>(
-                Error.WeatherProviderError());
-        }
-
+        var currentWeatherObject = result.Value;
         var weather = currentWeatherObject.weather.FirstOrDefault();
         var description = Make.WeatherDescription(currentWeatherObject.main.temp, request.Unit, weather?.main, weather?.description);
 
