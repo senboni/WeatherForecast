@@ -4,6 +4,7 @@ using System;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using WeatherForecast.Host.Common;
 
 namespace WeatherForecast.Host.WeatherProviders;
 
@@ -14,7 +15,7 @@ public class OpenWeatherMapWeatherProviderCached(
     private readonly OpenWeatherMapWeatherProvider _weatherProvider = weatherProvider;
     private readonly IMemoryCache _memoryCache = memoryCache;
 
-    public async Task<Result<TValue, HttpStatusCode>> GetCurrentWeather<TValue>(string city, string unit, CancellationToken cancellationToken)
+    public async Task<Result<TValue, HttpStatusCode>> GetCurrentWeather<TValue>(string city, TemperatureUnit unit, CancellationToken cancellationToken)
     {
         var key = $"current-{city}-{unit}";
 
@@ -25,7 +26,7 @@ public class OpenWeatherMapWeatherProviderCached(
         });
     }
 
-    public async Task<Result<TValue, HttpStatusCode>> GetForecastWeather<TValue>(string city, string unit, CancellationToken cancellationToken)
+    public async Task<Result<TValue, HttpStatusCode>> GetForecastWeather<TValue>(string city, TemperatureUnit unit, CancellationToken cancellationToken)
     {
         var key = $"forecast-{city}-{unit}";
 

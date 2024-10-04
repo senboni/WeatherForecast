@@ -26,15 +26,15 @@ public class OpenWeatherMapWeatherProviderCachedTest
         var cachedProvider = new OpenWeatherMapWeatherProviderCached(provider, cache);
 
         //act
-        await cachedProvider.GetCurrentWeather<Result<object, HttpStatusCode>>("Barcelona", "C", default);
-        await cachedProvider.GetCurrentWeather<Result<object, HttpStatusCode>>("Barcelona", "C", default);
+        await cachedProvider.GetCurrentWeather<Result<object, HttpStatusCode>>("Barcelona", TemperatureUnit.C, default);
+        await cachedProvider.GetCurrentWeather<Result<object, HttpStatusCode>>("Barcelona", TemperatureUnit.C, default);
 
         //assert
         httpClientFactory.Received(1).CreateClient(Constants.OpenWeatherMapClient);
     }
 
     [Fact]
-    public async Task GetForecastWeatherCalled3Times_ShouldCallHttpClientOnce()
+    public async Task GetForecastWeatherCalled3Times_ShouldCallHttpClientTwice()
     {
         //arrange
         var httpClientFactory = Substitute.For<IHttpClientFactory>();
@@ -50,12 +50,12 @@ public class OpenWeatherMapWeatherProviderCachedTest
         var cachedProvider = new OpenWeatherMapWeatherProviderCached(provider, cache);
 
         //act
-        await cachedProvider.GetForecastWeather<Result<object, HttpStatusCode>>("Barcelona", "C", default);
-        await cachedProvider.GetForecastWeather<Result<object, HttpStatusCode>>("Barcelona", "C", default);
-        await cachedProvider.GetForecastWeather<Result<object, HttpStatusCode>>("Barcelona", "C", default);
+        await cachedProvider.GetForecastWeather<Result<object, HttpStatusCode>>("Barcelona", TemperatureUnit.F, default);
+        await cachedProvider.GetForecastWeather<Result<object, HttpStatusCode>>("Barcelona", TemperatureUnit.F, default);
+        await cachedProvider.GetForecastWeather<Result<object, HttpStatusCode>>("Barcelona", TemperatureUnit.C, default);
 
         //assert
-        httpClientFactory.Received(1).CreateClient(Constants.OpenWeatherMapClient);
+        httpClientFactory.Received(2).CreateClient(Constants.OpenWeatherMapClient);
     }
 
     private class MockHandler : HttpMessageHandler

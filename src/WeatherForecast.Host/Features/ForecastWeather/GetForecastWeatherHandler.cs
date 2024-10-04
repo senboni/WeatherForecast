@@ -23,13 +23,13 @@ public static class GetForecastWeatherHandler
                 Error.UserError("City parameter must not be empty."));
         }
 
-        if (Constants.TemperatureUnits.All(x => x != request.Unit))
+        if (!Enum.TryParse(request.Unit, true, out TemperatureUnit unit))
         {
             return Result.Failure<GetForecastWeather.Response, Error>(
                 Error.UserError("Invalid temperature unit. Available units: c (celsius), f (fahrenheit), k (kelvin)."));
         }
 
-        var result = await weatherProvider.GetForecastWeather<ForecastObject>(request.City, request.Unit, cancellationToken);
+        var result = await weatherProvider.GetForecastWeather<ForecastObject>(request.City, unit, cancellationToken);
 
         if (result.IsFailure)
         {

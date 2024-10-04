@@ -1,13 +1,14 @@
 ﻿using CSharpFunctionalExtensions;
 using System.Net;
 using System.Text.Json;
+using WeatherForecast.Host.Common;
 using WeatherForecast.Host.WeatherProviders;
 
 namespace WeatherForecast.IntegrationTests.Mocks;
 
 public class OpenWeatherMapMock : IWeatherProvider
 {
-    public async Task<Result<TValue, HttpStatusCode>> GetCurrentWeather<TValue>(string city, string unit, CancellationToken cancellationToken)
+    public async Task<Result<TValue, HttpStatusCode>> GetCurrentWeather<TValue>(string city, TemperatureUnit unit, CancellationToken cancellationToken)
     {
         var (testFile, statusCode) = city.ToLower() switch
         {
@@ -27,7 +28,7 @@ public class OpenWeatherMapMock : IWeatherProvider
         return Result.Success<TValue, HttpStatusCode>(value);
     }
 
-    public async Task<Result<TValue, HttpStatusCode>> GetForecastWeather<TValue>(string city, string unit, CancellationToken cancellationToken)
+    public async Task<Result<TValue, HttpStatusCode>> GetForecastWeather<TValue>(string city, TemperatureUnit unit, CancellationToken cancellationToken)
     {
         var (testFile, statusCode) = city.ToLower() switch
         {

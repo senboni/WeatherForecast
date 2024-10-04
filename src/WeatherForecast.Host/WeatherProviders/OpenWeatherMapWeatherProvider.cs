@@ -16,17 +16,17 @@ public class OpenWeatherMapWeatherProvider(IHttpClientFactory httpClientFactory)
 {
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
 
-    private static readonly Dictionary<string, string> _units = new()
+    private static readonly Dictionary<TemperatureUnit, string> _owmUnits = new()
     {
-        { "C", "metric" },
-        { "F", "imperial" },
-        { "K", "standard" },
+        { TemperatureUnit.C, "metric" },
+        { TemperatureUnit.F, "imperial" },
+        { TemperatureUnit.K, "standard" },
     };
 
-    public async Task<Result<TValue, HttpStatusCode>> GetCurrentWeather<TValue>(string city, string unit, CancellationToken cancellationToken)
+    public async Task<Result<TValue, HttpStatusCode>> GetCurrentWeather<TValue>(string city, TemperatureUnit unit, CancellationToken cancellationToken)
     {
         var client = _httpClientFactory.CreateClient(Constants.OpenWeatherMapClient);
-        var response = await client.GetAsync($"/weather?q={city}&units={_units[unit]}", cancellationToken);
+        var response = await client.GetAsync($"/weather?q={city}&units={_owmUnits[unit]}", cancellationToken);
 
         using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
         var value = await JsonSerializer.DeserializeAsync<TValue>(stream, cancellationToken: cancellationToken);
@@ -39,10 +39,10 @@ public class OpenWeatherMapWeatherProvider(IHttpClientFactory httpClientFactory)
         return Result.Success<TValue, HttpStatusCode>(value);
     }
 
-    public async Task<Result<TValue, HttpStatusCode>> GetForecastWeather<TValue>(string city, string unit, CancellationToken cancellationToken)
+    public async Task<Result<TValue, HttpStatusCode>> GetForecastWeather<TValue>(string city, TemperatureUnit unit, CancellationToken cancellationToken)
     {
         var client = _httpClientFactory.CreateClient(Constants.OpenWeatherMapClient);
-        var response = await client.GetAsync($"/forecast?q={city}&units={_units[unit]}", cancellationToken);
+        var response = await client.GetAsync($"/forecast?q={city}&units={_owmUnits[unit]}", cancellationToken);
 
         using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
         var value = await JsonSerializer.DeserializeAsync<TValue>(stream, cancellationToken: cancellationToken);

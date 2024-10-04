@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using System;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -22,13 +23,13 @@ public static class GetCurrentWeatherHandler
                 Error.UserError("City parameter must not be empty."));
         }
 
-        if (Constants.TemperatureUnits.All(x => x != request.Unit))
+        if (!Enum.TryParse(request.Unit, true, out TemperatureUnit unit))
         {
             return Result.Failure<GetCurrentWeather.Response, Error>(
                 Error.UserError("Invalid temperature unit. Available units: c (celsius), f (fahrenheit), k (kelvin)."));
         }
 
-        var result = await weatherProvider.GetCurrentWeather<CurrentWeatherObject>(request.City, request.Unit, cancellationToken);
+        var result = await weatherProvider.GetCurrentWeather<CurrentWeatherObject>(request.City, unit, cancellationToken);
 
         if (result.IsFailure)
         {
