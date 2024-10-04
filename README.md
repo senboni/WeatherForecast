@@ -143,8 +143,11 @@ dotnet --version
 - API Key: You will need an API key from [OpenWeatherMap](https://openweathermap.org/). This API key will be used to fetch weather data.
 
 ### Configuration
-- Once you have obtained your OpenWeatherMap API key, add it to the project using the dotnet CLI and the user-secrets feature.
-- Run the following command from project path to set up your API key:
+- Once you have obtained your OpenWeatherMap API key, you can:
+  - add it directly to `appsettings.json` or
+  - add it to the project using the dotnet CLI and the user-secrets feature.
+
+User-secrets way: run the following command from project path to set up your API key:
 ```bash
 dotnet user-secrets set "OpenWeatherMapApiKey" "<Your-API-Key>"
 ```

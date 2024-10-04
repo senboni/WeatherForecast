@@ -17,7 +17,7 @@ public static class GetForecastWeather
         [FromQuery(Name = "date")] DateTime? dateTime = null,
         CancellationToken cancellationToken = default)
     {
-        var request = new Request(city, unit.ToUpper(), dateTime);
+        var request = new Request(city, unit, dateTime);
         var result = await GetForecastWeatherHandler.Handle(request, weatherProvider, cancellationToken);
 
         return result.IsSuccess

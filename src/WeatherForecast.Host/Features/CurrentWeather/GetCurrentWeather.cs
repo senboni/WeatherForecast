@@ -16,7 +16,7 @@ public static class GetCurrentWeather
         [FromQuery(Name = "unit")] string unit = "c",
         CancellationToken cancellationToken = default)
     {
-        var request = new Request(city, unit.ToUpper());
+        var request = new Request(city, unit);
         var result = await GetCurrentWeatherHandler.Handle(request, weatherProvider, cancellationToken);
 
         return result.IsSuccess
